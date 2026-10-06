@@ -1,0 +1,562 @@
+<!doctype html>
+
+<html lang="en">
+
+<head>
+
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+
+<title>Lenox Search Sandbox — Build It Yourself</title>
+
+<style>
+
+:root{--ink:#21162a;--purple:#573474;--deep:#351c4b;--bg:#f7f3f9;--paper:#fff;--line:#ddd3e4;--muted:#6b6071;--focus:#1267c4}
+
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Arial,Helvetica,sans-serif}
+
+header{height:58px;background:var(--deep);color:#fff;display:flex;align-items:center;padding:0 24px;font-weight:900}
+
+main{width:min(1200px,96vw);margin:22px auto;display:grid;grid-template-columns:.9fr 1.1fr;gap:18px;min-height:calc(100vh - 102px)}
+
+.panel{background:#fff;border:1px solid var(--line);border-radius:22px;padding:25px;box-shadow:0 10px 28px rgba(53,28,75,.06)}
+
+.eyebrow{font-size:.78rem;text-transform:uppercase;letter-spacing:.1em;font-weight:900;color:var(--purple);margin:0 0 7px}
+
+h1{font-size:1.85rem;color:var(--deep);margin:0 0 9px}.help{color:var(--muted);line-height:1.45;margin:0 0 20px}
+
+.workspace{border:2px dashed #c9bad2;border-radius:17px;padding:16px;min-height:108px;background:#fbf9fc;margin-bottom:18px}
+
+.label{font-size:.78rem;font-weight:900;text-transform:uppercase;color:var(--muted);margin-bottom:9px}
+
+.query{display:flex;align-items:center;gap:7px;flex-wrap:wrap;min-height:45px}
+
+.qchip{display:inline-flex;align-items:center;gap:7px;background:#fff;border:2px solid #bfaaca;border-radius:12px;padding:9px 11px;font-weight:900}
+
+.qchip button{border:0;background:#eee6f3;color:var(--deep);border-radius:50%;width:22px;height:22px;cursor:pointer;font-weight:900}
+
+.op{font-weight:900;color:var(--purple)}
+
+.bank{margin-top:14px}.bank h2{font-size:1rem;margin:18px 0 8px;color:var(--deep)}
+
+.row{display:flex;flex-wrap:wrap;gap:8px}.add{border:2px solid #c7b6d2;background:#fff;color:var(--ink);border-radius:999px;padding:9px 12px;font-weight:800;cursor:pointer}
+
+.add:hover{background:#f4eef7}.add.active{background:var(--purple);color:#fff;border-color:var(--purple)}.add:disabled{opacity:.35;cursor:default}.add:focus-visible,.qchip button:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+
+.quoteToggle{width:100%;margin-top:17px;border:2px solid var(--purple);background:#fff;color:var(--purple);border-radius:13px;padding:12px;font-weight:900;cursor:pointer}.quoteToggle.on{background:var(--purple);color:#fff}
+
+.reset{border:0;background:transparent;color:var(--purple);font-weight:900;text-decoration:underline;cursor:pointer;margin-top:15px}
+
+.results{min-height:420px;background:#faf7fc;border-radius:18px;padding:21px;display:flex;flex-wrap:wrap;align-content:flex-start;justify-content:center;gap:8px}
+
+.item{width:55px;height:55px;border:2px solid #c4b1cf;border-radius:13px;background:#efe6f4;display:flex;align-items:center;justify-content:center;font-size:1.5rem;animation:pop .18s ease}
+
+@keyframes pop{from{opacity:.1;transform:scale(.65)}to{opacity:1;transform:scale(1)}}.count{text-align:center;font-weight:900;color:var(--purple);margin:11px 0}.note{margin-top:13px;padding:12px 14px;background:#f2edf6;border-radius:12px;line-height:1.4;font-weight:700}.caption{text-align:center;color:var(--muted);font-size:.84rem}
+
+@media(max-width:780px){main{grid-template-columns:1fr}.panel{padding:19px}.results{min-height:300px}}
+
+@media(prefers-reduced-motion:reduce){.item{animation:none}}
+
+
+.continueBtn,.backBtn{display:block;width:100%;margin-top:14px;border:2px solid var(--purple);background:var(--purple);color:#fff;border-radius:13px;padding:12px;font-weight:900;cursor:pointer}.backBtn{background:#fff;color:var(--purple)}
+.searchCarry{border:2px solid #bfaaca;border-radius:16px;padding:15px;background:#fbf9fc;margin-bottom:16px}.filterGroup{margin:16px 0}.filterGroup h2{font-size:1rem;margin:0 0 8px;color:var(--deep)}
+.filterRow{display:flex;flex-wrap:wrap;gap:8px}.filterBtn{border:2px solid #c7b6d2;background:#fff;color:var(--ink);border-radius:999px;padding:9px 12px;font-weight:800;cursor:pointer}.filterBtn.active{background:var(--purple);color:#fff;border-color:var(--purple)}
+.filterSummary{margin-top:12px;color:var(--muted);font-weight:800;line-height:1.4}.item{position:relative}.metaBadge{position:absolute;font-size:.57rem;font-weight:900;line-height:1;background:#fff;border:1px solid #bfaaca;border-radius:999px;padding:3px 4px;color:var(--deep)}
+.peerBadge{top:-5px;right:-5px}.dateBadge{bottom:-5px;left:50%;transform:translateX(-50%);white-space:nowrap}.legend{display:flex;justify-content:center;flex-wrap:wrap;gap:8px;margin:10px 0 2px;font-size:.78rem;color:var(--muted);font-weight:800}.legend span{background:#fff;border:1px solid var(--line);border-radius:999px;padding:5px 8px}
+
+.transferPanel{max-width:760px;margin:22px auto;text-align:left}.transferPanel h1{margin-bottom:10px}.transferLead{font-size:1.12rem;line-height:1.55;margin:0 0 22px;color:#4d4355}.catalogBtn{display:block;width:100%;box-sizing:border-box;background:var(--purple);color:#fff;text-align:center;text-decoration:none;border-radius:13px;padding:18px 24px;font-weight:900;margin:0 0 28px}.transferPrompt{margin:0 0 28px}.transferPrompt p{margin:0 0 10px;line-height:1.55}.transferPrompt ul{margin:8px 0 16px;padding-left:24px;line-height:1.65}
+[hidden]{display:none !important}
+</style></head>
+
+<body>
+
+<header>LENOX LIBRARY · SEARCH SANDBOX</header>
+
+<main>
+
+<section class="panel">
+
+<p class="eyebrow">Your side</p><h1 id="leftTitle">Build the search.</h1>
+
+<p class="help" id="leftHelp">Add or remove pieces whenever you want. There is no required order.</p>
+
+<div class="workspace" id="searchWorkspace">
+<div class="label">Your search</div><div class="query" id="query"></div>
+</div>
+
+
+
+<div class="bank" id="searchControls">
+
+<h2>Forest words</h2><div class="row" id="forestBank"></div>
+
+<h2>Insect words</h2><div class="row" id="insectBank"></div>
+
+<h2>Connect the two ideas</h2>
+
+<div class="row">
+
+<button class="add" id="andBtn">+ AND</button>
+
+<button class="add" id="orBtn">+ OR</button>
+
+<button class="add" id="clearConnector">Remove connector</button>
+
+</div>
+
+<h2>Exact phrases</h2>
+
+<div id="phraseBank">
+
+<button class="add" data-phrase="phrase">+ Exact phrase: "invasive insects"</button>
+
+<button class="add" data-phrase="evergreen_forests">+ Exact phrase: "evergreen forests"</button>
+
+<button class="add" data-phrase="tropical_rainforests">+ Exact phrase: "tropical rainforests"</button>
+
+<button class="add" data-phrase="tiger_beetle">+ Exact phrase: "tiger beetle"</button>
+
+</div>
+
+<button class="reset" onclick="resetAll()">Reset sandbox</button>
+<button class="continueBtn" onclick="goToFilters()">Continue: Demo filters →</button>
+
+</div>
+
+
+<div id="filterControls" hidden>
+<div class="searchCarry">
+  <div class="label">Your search</div>
+  <div class="query" id="carriedQuery"></div>
+  <div class="filterSummary" id="originalResultCount" style="margin-top:10px"></div>
+</div>
+
+<div class="filterGroup"><h2>Peer reviewed</h2><div class="filterRow"><button class="filterBtn" id="peerBtn" onclick="togglePeer()">Peer reviewed only</button></div></div>
+<div class="filterGroup"><h2>Publication date</h2><div class="filterRow"><button class="filterBtn active" data-date="all" onclick="setDateFilter('all')">All dates</button><button class="filterBtn" data-date="10" onclick="setDateFilter('10')">Last 10 years</button><button class="filterBtn" data-date="5" onclick="setDateFilter('5')">Last 5 years</button></div></div>
+<div class="filterGroup"><h2>Source type</h2><div class="filterRow"><button class="filterBtn active" data-source="all" onclick="setSourceFilter('all')">All</button><button class="filterBtn" data-source="journal" onclick="setSourceFilter('journal')">Academic journals</button><button class="filterBtn" data-source="news" onclick="setSourceFilter('news')">News</button></div></div>
+<div class="filterSummary" id="filterSummary">No filters applied yet.</div>
+<button class="reset" onclick="resetFilters()">Reset filters</button>
+
+
+<button class="backBtn" onclick="backToSearch()">← Back to search building</button>
+<button class="continueBtn" onclick="goToTransfer()">Continue: Try it for real →</button>
+</div>
+</section>
+
+
+
+<section class="panel">
+
+<p class="eyebrow">Result side</p><h1 id="rightTitle">Watch the pool react.</h1>
+
+<div class="results" id="results" aria-live="polite"></div>
+
+<div class="count" id="count"></div><div class="legend" id="resultLegend" hidden><span>✓ PR = peer reviewed</span><span>NEW = last 5 years</span><span>REC = 6–10 years ago</span><span>OLD = more than 10 years ago</span></div>
+
+<p class="caption">Illustrative result pool — not real database results.</p>
+
+<div class="note" id="note"></div>
+
+</section>
+
+</main>
+
+<div id="transferStage" hidden>
+  <section class="panel transferPanel">
+    <p class="eyebrow">Part 3</p>
+    <h1>Try it for real.</h1>
+    <p class="transferLead">You’ve practiced changing a search. Now try it in the real library search.</p>
+    <a class="catalogBtn" href="https://www.uww.edu/library" target="_blank" rel="noopener">Open Research@UWW →</a>
+    <div class="transferPrompt">
+      <p><strong>Try one search.</strong></p>
+      <p>Search for something you’re curious about.</p>
+      <p><strong>Then, if you want, change it once.</strong></p>
+      <p>You could:</p>
+      <ul><li>add another keyword</li><li>try AND or OR</li><li>put a phrase in quotation marks</li><li>try a filter</li></ul>
+      <p><strong>That’s it.</strong> You don’t need to find the perfect source. Just notice what happens when you change your search.</p>
+    </div>
+    <button class="continueBtn" type="button" onclick="backToFilters()">← Back to filters</button>
+  </section>
+</div>
+
+
+
+<script>
+
+const forestWords=['forests','woodlands','trees'];
+
+const insectWords=['insects','bugs','beetles'];
+
+let tokens=[{type:'term',value:'forests'}];
+
+
+
+/* Fixed hypothetical database. Every search is calculated from these same records. */
+
+const pool=[{"id":1,"icon":"🌲","forests":true,"woodlands":false,"trees":false,"insects":false,"bugs":false,"beetles":false,"phrase":false,"evergreen_forests":true,"tropical_rainforests":false,"tiger_beetle":false},{"id":2,"icon":"🌲","forests":true,"woodlands":false,"trees":false,"insects":false,"bugs":false,"beetles":false,"phrase":false,"evergreen_forests":true,"tropical_rainforests":false,"tiger_beetle":false},{"id":3,"icon":"🌲","forests":true,"woodlands":false,"trees":false,"insects":false,"bugs":false,"beetles":false,"phrase":false,"evergreen_forests":true,"tropical_rainforests":false,"tiger_beetle":false},{"id":4,"icon":"🌲","forests":true,"woodlands":false,"trees":false,"insects":false,"bugs":false,"beetles":false,"phrase":false,"evergreen_forests":true,"tropical_rainforests":false,"tiger_beetle":false},{"id":5,"icon":"🌲","forests":true,"woodlands":false,"trees":false,"insects":false,"bugs":false,"beetles":false,"phrase":false,"evergreen_forests":true,"tropical_rainforests":false,"tiger_beetle":false},{"id":6,"icon":"🌲","forests":true,"woodlands":false,"trees":false,"insects":false,"bugs":false,"beetles":false,"phrase":false,"evergreen_forests":true,"tropical_rainforests":false,"tiger_beetle":false},{"id":7,"icon":"🌲","forests":true,"woodlands":false,"trees":false,"insects":false,"bugs":false,"beetles":false,"phrase":false,"evergreen_forests":true,"tropical_rainforests":false,"tiger_beetle":false},{"id":8,"icon":"🌲","forests":true,"woodlands":false,"trees":false,"insects":false,"bugs":false,"beetles":false,"phrase":false,"evergreen_forests":true,"tropical_rainforests":false,"tiger_beetle":false},{"id":9,"icon":"🌲","woodlands":true,"forests":false,"trees":false,"insects":false,"bugs":false,"beetles":false,"phrase":false,"evergreen_forests":false,"tropical_rainforests":false,"tiger_beetle":false},{"id":10,"icon":"🌲","woodlands":true,"forests":false,"trees":false,"insects":false,"bugs":false,"beetles":false,"phrase":false,"evergreen_forests":false,"tropical_rainforests":false,"tiger_beetle":false},{"id":11,"icon":"🌲","woodlands":true,"forests":false,"trees":false,"insects":false,"bugs":false,"beetles":false,"phrase":false,"evergreen_forests":false,"tropical_rainforests":false,"tiger_beetle":false},{"id":12,"icon":"🌲","woodlands":true,"forests":false,"trees":false,"insects":false,"bugs":false,"beetles":false,"phrase":false,"evergreen_forests":false,"tropical_rainforests":false,"tiger_beetle":false},{"id":13,"icon":"🌲","woodlands":true,"forests":false,"trees":false,"insects":false,"bugs":false,"beetles":false,"phrase":false,"evergreen_forests":false,"tropical_rainforests":false,"tiger_beetle":false},{"id":14,"icon":"🌲","trees":true,"forests":false,"woodlands":false,"insects":false,"bugs":false,"beetles":false,"phrase":false,"evergreen_forests":false,"tropical_rainforests":false,"tiger_beetle":false},{"id":15,"icon":"🌲","trees":true,"forests":false,"woodlands":false,"insects":false,"bugs":false,"beetles":false,"phrase":false,"evergreen_forests":false,"tropical_rainforests":false,"tiger_beetle":false},{"id":16,"icon":"🌲","trees":true,"forests":false,"woodlands":false,"insects":false,"bugs":false,"beetles":false,"phrase":false,"evergreen_forests":false,"tropical_rainforests":false,"tiger_beetle":false},{"id":17,"icon":"🌲","trees":true,"forests":false,"woodlands":false,"insects":false,"bugs":false,"beetles":false,"phrase":false,"evergreen_forests":false,"tropical_rainforests":false,"tiger_beetle":false},{"id":18,"icon":"🌲","trees":true,"forests":false,"woodlands":false,"insects":false,"bugs":false,"beetles":false,"phrase":false,"evergreen_forests":false,"tropical_rainforests":false,"tiger_beetle":false},{"id":19,"icon":"🌲","forests":true,"woodlands":true,"trees":false,"insects":false,"bugs":false,"beetles":false,"phrase":false,"evergreen_forests":true,"tropical_rainforests":false,"tiger_beetle":false},{"id":20,"icon":"🌲","forests":true,"woodlands":true,"trees":false,"insects":false,"bugs":false,"beetles":false,"phrase":false,"evergreen_forests":false,"tropical_rainforests":true,"tiger_beetle":false},{"id":21,"icon":"🌲","forests":true,"woodlands":true,"trees":false,"insects":false,"bugs":false,"beetles":false,"phrase":false,"evergreen_forests":false,"tropical_rainforests":true,"tiger_beetle":false},{"id":22,"icon":"🌲","forests":true,"woodlands":true,"trees":false,"insects":false,"bugs":false,"beetles":false,"phrase":false,"evergreen_forests":false,"tropical_rainforests":true,"tiger_beetle":false},{"id":23,"icon":"🌲","woodlands":true,"trees":true,"forests":false,"insects":false,"bugs":false,"beetles":false,"phrase":false,"evergreen_forests":false,"tropical_rainforests":false,"tiger_beetle":false},{"id":24,"icon":"🌲","woodlands":true,"trees":true,"forests":false,"insects":false,"bugs":false,"beetles":false,"phrase":false,"evergreen_forests":false,"tropical_rainforests":false,"tiger_beetle":false},{"id":25,"icon":"🌲","woodlands":true,"trees":true,"forests":false,"insects":false,"bugs":false,"beetles":false,"phrase":false,"evergreen_forests":false,"tropical_rainforests":false,"tiger_beetle":false},{"id":26,"icon":"🌲","forests":true,"trees":true,"woodlands":false,"insects":false,"bugs":false,"beetles":false,"phrase":false,"evergreen_forests":false,"tropical_rainforests":true,"tiger_beetle":false},{"id":27,"icon":"🌲","forests":true,"trees":true,"woodlands":false,"insects":false,"bugs":false,"beetles":false,"phrase":false,"evergreen_forests":false,"tropical_rainforests":true,"tiger_beetle":false},{"id":28,"icon":"🌲","forests":true,"trees":true,"woodlands":false,"insects":false,"bugs":false,"beetles":false,"phrase":false,"evergreen_forests":false,"tropical_rainforests":true,"tiger_beetle":false},{"id":29,"icon":"🐛","insects":true,"forests":false,"woodlands":false,"trees":false,"bugs":false,"beetles":false,"phrase":false,"evergreen_forests":false,"tropical_rainforests":false,"tiger_beetle":false},{"id":30,"icon":"🐛","insects":true,"forests":false,"woodlands":false,"trees":false,"bugs":false,"beetles":false,"phrase":false,"evergreen_forests":false,"tropical_rainforests":false,"tiger_beetle":false},{"id":31,"icon":"🐛","insects":true,"forests":false,"woodlands":false,"trees":false,"bugs":false,"beetles":false,"phrase":false,"evergreen_forests":false,"tropical_rainforests":false,"tiger_beetle":false},{"id":32,"icon":"🐛","insects":true,"forests":false,"woodlands":false,"trees":false,"bugs":false,"beetles":false,"phrase":false,"evergreen_forests":false,"tropical_rainforests":false,"tiger_beetle":false},{"id":33,"icon":"🐛","insects":true,"forests":false,"woodlands":false,"trees":false,"bugs":false,"beetles":false,"phrase":false,"evergreen_forests":false,"tropical_rainforests":false,"tiger_beetle":false},{"id":34,"icon":"🐛","insects":true,"forests":false,"woodlands":false,"trees":false,"bugs":false,"beetles":false,"phrase":false,"evergreen_forests":false,"tropical_rainforests":false,"tiger_beetle":false},{"id":35,"icon":"🐛","bugs":true,"forests":false,"woodlands":false,"trees":false,"insects":false,"beetles":false,"phrase":false,"evergreen_forests":false,"tropical_rainforests":false,"tiger_beetle":false},{"id":36,"icon":"🐛","bugs":true,"forests":false,"woodlands":false,"trees":false,"insects":false,"beetles":false,"phrase":false,"evergreen_forests":false,"tropical_rainforests":false,"tiger_beetle":false},{"id":37,"icon":"🐛","bugs":true,"forests":false,"woodlands":false,"trees":false,"insects":false,"beetles":false,"phrase":false,"evergreen_forests":false,"tropical_rainforests":false,"tiger_beetle":false},{"id":38,"icon":"🐛","bugs":true,"forests":false,"woodlands":false,"trees":false,"insects":false,"beetles":false,"phrase":false,"evergreen_forests":false,"tropical_rainforests":false,"tiger_beetle":false},{"id":39,"icon":"🌲🐛","beetles":true,"forests":true,"woodlands":false,"trees":false,"insects":true,"bugs":false,"phrase":false,"evergreen_forests":false,"tropical_rainforests":false,"tiger_beetle":true},{"id":40,"icon":"🌲🐛","beetles":true,"forests":true,"woodlands":true,"trees":false,"insects":true,"bugs":false,"phrase":false,"evergreen_forests":false,"tropical_rainforests":false,"tiger_beetle":true},{"id":41,"icon":"🌲🐛","beetles":true,"forests":true,"woodlands":false,"trees":true,"insects":true,"bugs":false,"phrase":false,"evergreen_forests":false,"tropical_rainforests":false,"tiger_beetle":true},{"id":42,"icon":"🌲🐛","beetles":true,"forests":false,"woodlands":true,"trees":false,"insects":true,"bugs":false,"phrase":false,"evergreen_forests":false,"tropical_rainforests":false,"tiger_beetle":true},{"id":43,"icon":"🐛","insects":true,"bugs":true,"forests":false,"woodlands":false,"trees":false,"beetles":false,"phrase":false,"evergreen_forests":false,"tropical_rainforests":false,"tiger_beetle":false},{"id":44,"icon":"🐛","insects":true,"bugs":true,"forests":false,"woodlands":false,"trees":false,"beetles":false,"phrase":false,"evergreen_forests":false,"tropical_rainforests":false,"tiger_beetle":false},{"id":45,"icon":"🐛","insects":true,"bugs":true,"forests":false,"woodlands":false,"trees":false,"beetles":false,"phrase":false,"evergreen_forests":false,"tropical_rainforests":false,"tiger_beetle":false},{"id":46,"icon":"🌲🐛","insects":true,"beetles":true,"forests":false,"woodlands":false,"trees":true,"bugs":false,"phrase":false,"evergreen_forests":false,"tropical_rainforests":false,"tiger_beetle":true},{"id":47,"icon":"🐛","insects":true,"beetles":true,"forests":false,"woodlands":false,"trees":false,"bugs":false,"phrase":false,"evergreen_forests":false,"tropical_rainforests":false,"tiger_beetle":false},{"id":48,"icon":"🐛","insects":true,"beetles":true,"forests":false,"woodlands":false,"trees":false,"bugs":false,"phrase":false,"evergreen_forests":false,"tropical_rainforests":false,"tiger_beetle":false},{"id":49,"icon":"🐛","bugs":true,"beetles":true,"forests":false,"woodlands":false,"trees":false,"insects":false,"phrase":false,"evergreen_forests":false,"tropical_rainforests":false,"tiger_beetle":false},{"id":50,"icon":"🐛","bugs":true,"beetles":true,"forests":false,"woodlands":false,"trees":false,"insects":false,"phrase":false,"evergreen_forests":false,"tropical_rainforests":false,"tiger_beetle":false},{"id":51,"icon":"🌲🐛","forests":true,"insects":true,"woodlands":false,"trees":false,"bugs":false,"beetles":false,"phrase":false,"evergreen_forests":false,"tropical_rainforests":false,"tiger_beetle":false},{"id":52,"icon":"🌲🐛","forests":true,"insects":true,"woodlands":false,"trees":false,"bugs":false,"beetles":false,"phrase":false,"evergreen_forests":false,"tropical_rainforests":false,"tiger_beetle":false},{"id":53,"icon":"🌲🐛","forests":true,"insects":true,"woodlands":false,"trees":false,"bugs":false,"beetles":false,"phrase":false,"evergreen_forests":false,"tropical_rainforests":false,"tiger_beetle":false},{"id":54,"icon":"🌲🐛","forests":true,"insects":true,"woodlands":false,"trees":false,"bugs":false,"beetles":false,"phrase":false,"evergreen_forests":false,"tropical_rainforests":false,"tiger_beetle":false},{"id":55,"icon":"🌲🐛","trees":true,"bugs":true,"forests":false,"woodlands":false,"insects":false,"beetles":false,"phrase":false,"evergreen_forests":false,"tropical_rainforests":false,"tiger_beetle":false},{"id":56,"icon":"🌲🐛","trees":true,"bugs":true,"forests":false,"woodlands":false,"insects":false,"beetles":false,"phrase":false,"evergreen_forests":false,"tropical_rainforests":false,"tiger_beetle":false},{"id":57,"icon":"🌲🐛","trees":true,"bugs":true,"forests":false,"woodlands":false,"insects":false,"beetles":false,"phrase":false,"evergreen_forests":false,"tropical_rainforests":false,"tiger_beetle":false},{"id":58,"icon":"🌲🐛","woodlands":true,"beetles":true,"forests":false,"trees":false,"insects":false,"bugs":false,"phrase":false,"evergreen_forests":false,"tropical_rainforests":false,"tiger_beetle":false},{"id":59,"icon":"🌲🐛","woodlands":true,"beetles":true,"forests":false,"trees":false,"insects":false,"bugs":false,"phrase":false,"evergreen_forests":false,"tropical_rainforests":false,"tiger_beetle":false},{"id":60,"icon":"🌲🐛","woodlands":true,"beetles":true,"forests":false,"trees":false,"insects":false,"bugs":false,"phrase":false,"evergreen_forests":false,"tropical_rainforests":false,"tiger_beetle":false},{"id":61,"icon":"🌲🐛","forests":true,"beetles":true,"woodlands":false,"trees":false,"insects":false,"bugs":false,"phrase":false,"evergreen_forests":false,"tropical_rainforests":false,"tiger_beetle":false},{"id":62,"icon":"🌲🐛","forests":true,"beetles":true,"woodlands":false,"trees":false,"insects":false,"bugs":false,"phrase":false,"evergreen_forests":false,"tropical_rainforests":false,"tiger_beetle":false},{"id":63,"icon":"🌲🐛","woodlands":true,"insects":true,"forests":false,"trees":false,"bugs":false,"beetles":false,"phrase":false,"evergreen_forests":false,"tropical_rainforests":false,"tiger_beetle":false},{"id":64,"icon":"🌲🐛","woodlands":true,"insects":true,"forests":false,"trees":false,"bugs":false,"beetles":false,"phrase":false,"evergreen_forests":false,"tropical_rainforests":false,"tiger_beetle":false},{"id":65,"icon":"🐛","insects":true,"phrase":true,"forests":false,"woodlands":false,"trees":false,"bugs":false,"beetles":true,"evergreen_forests":false,"tropical_rainforests":false,"tiger_beetle":false},{"id":66,"icon":"🐛","insects":true,"phrase":true,"forests":false,"woodlands":false,"trees":false,"bugs":false,"beetles":true,"evergreen_forests":false,"tropical_rainforests":false,"tiger_beetle":false},{"id":67,"icon":"🐛","insects":true,"phrase":true,"forests":false,"woodlands":false,"trees":false,"bugs":false,"beetles":true,"evergreen_forests":false,"tropical_rainforests":false,"tiger_beetle":false},{"id":68,"icon":"🐛","insects":true,"phrase":true,"forests":false,"woodlands":false,"trees":false,"bugs":false,"beetles":false,"evergreen_forests":false,"tropical_rainforests":false,"tiger_beetle":false},{"id":69,"icon":"🐛","insects":true,"phrase":true,"forests":false,"woodlands":false,"trees":false,"bugs":false,"beetles":false,"evergreen_forests":false,"tropical_rainforests":false,"tiger_beetle":false},{"id":70,"icon":"🌲🐛","forests":true,"insects":true,"phrase":true,"woodlands":false,"trees":false,"bugs":false,"beetles":false,"evergreen_forests":false,"tropical_rainforests":false,"tiger_beetle":false},{"id":71,"icon":"🌲🐛","forests":true,"insects":true,"phrase":true,"woodlands":false,"trees":false,"bugs":false,"beetles":false,"evergreen_forests":false,"tropical_rainforests":false,"tiger_beetle":false},{"id":72,"icon":"🌲🐛","forests":true,"insects":true,"phrase":true,"woodlands":false,"trees":false,"bugs":false,"beetles":false,"evergreen_forests":false,"tropical_rainforests":false,"tiger_beetle":false},{"id":73,"icon":"🌲🐛","woodlands":true,"insects":true,"phrase":true,"forests":false,"trees":false,"bugs":false,"beetles":false,"evergreen_forests":false,"tropical_rainforests":false,"tiger_beetle":false},{"id":74,"icon":"🌲🐛","woodlands":true,"insects":true,"phrase":true,"forests":false,"trees":false,"bugs":false,"beetles":false,"evergreen_forests":false,"tropical_rainforests":false,"tiger_beetle":false},{"id":75,"icon":"🌲🐛","trees":true,"insects":true,"phrase":true,"forests":false,"woodlands":false,"bugs":false,"beetles":false,"evergreen_forests":false,"tropical_rainforests":false,"tiger_beetle":false},{"id":76,"icon":"🌲🐛","trees":true,"insects":true,"phrase":true,"forests":false,"woodlands":false,"bugs":false,"beetles":false,"evergreen_forests":false,"tropical_rainforests":false,"tiger_beetle":false}];
+pool.forEach((r,i)=>{r.year=2012+((i*7)%15);r.sourceType=(i%4===0||i%4===3)?'news':'journal';r.peerReviewed=r.sourceType==='journal'&&i%3!==0;});
+let stage=1,peerOnly=false,dateFilter='all',sourceFilter='all';
+function recordPassesFilters(r){if(peerOnly&&!r.peerReviewed)return false;if(dateFilter==='10'&&r.year<2017)return false;if(dateFilter==='5'&&r.year<2022)return false;if(sourceFilter!=='all'&&r.sourceType!==sourceFilter)return false;return true}
+function queryText(){const p={phrase:'invasive insects',evergreen_forests:'evergreen forests',tropical_rainforests:'tropical rainforests',tiger_beetle:'tiger beetle'};return tokens.map(t=>t.type==='phrase'?'"'+p[t.value]+'"':t.value).join(' ')}
+function togglePeer(){peerOnly=!peerOnly;render()} function setDateFilter(v){dateFilter=v;render()} function setSourceFilter(v){sourceFilter=v;render()}
+function resetFilters(){peerOnly=false;dateFilter='all';sourceFilter='all';render()}
+const filterLessons=[
+`<strong>PEER REVIEWED</strong><br><br>
+<strong>I need scholarly research.</strong><br><br>
+<strong>TRY:</strong> Turn on <strong>Peer reviewed only</strong>.<br>
+<strong>WATCH:</strong> Which results stay?`,
+
+`<strong>DATE</strong><br><br>
+<strong>I need recent research.</strong><br><br>
+<strong>TRY:</strong> Choose <strong>Last 5 years</strong>.<br>
+<strong>WATCH:</strong> Which results disappear?<br><br>
+<strong>SWITCH:</strong> Choose <strong>All dates</strong>.<br>
+What comes back?`,
+
+`<strong>SOURCE TYPE</strong><br><br>
+<strong>I need current reporting about an insect outbreak.</strong><br><br>
+<strong>TRY:</strong> Choose <strong>News</strong>.<br><br>
+<strong>Now I need research studies about insects and forests.</strong><br>
+<strong>SWITCH:</strong> Choose <strong>Academic journals</strong>.<br>
+What changes?`,
+
+`<strong>YOUR TURN</strong><br><br>
+<strong>I need recent, scholarly research about forests and insects.</strong><br><br>
+What filters would you choose?`,
+
+`<strong>YOUR TURN</strong><br><br>
+<strong>I need current news about forests and insects.</strong><br><br>
+What would you change?`
+]
+let filterLessonIndex=0;
+function showFilterLesson(){filterLessonText.innerHTML=filterLessons[filterLessonIndex].html;prevFilterLessonBtn.disabled=filterLessonIndex===0;nextFilterLessonBtn.style.display=filterLessonIndex===filterLessons.length-1?'none':'inline-block'}
+function nextFilterLesson(){if(filterLessonIndex<filterLessons.length-1)filterLessonIndex++;resetFilters();showFilterLesson()}
+function previousFilterLesson(){if(filterLessonIndex>0)filterLessonIndex--;resetFilters();showFilterLesson()}
+function goToFilters(){
+ tokens=[{type:'term',value:'forests'},{type:'op',value:'AND'},{type:'term',value:'insects'}];
+ stage=2;
+ searchWorkspace.hidden=true;searchControls.hidden=true;filterControls.hidden=false;
+ leftTitle.textContent='Which results do you need?';
+ leftHelp.textContent='The search is fixed for this demo. Now watch what changes when you apply filters.';
+ rightTitle.textContent='Watch the filtered pool.';
+ filterLessonIndex=0;
+ resetFilters();
+ showFilterLesson();
+ render();
+}
+
+function goToTransfer(){
+ document.querySelector('main').hidden=true;
+ document.getElementById('transferStage').hidden=false;
+}
+function backToFilters(){
+ document.getElementById('transferStage').hidden=true;
+ document.querySelector('main').hidden=false;
+}
+
+function backToSearch(){
+ stage=1;
+ filterControls.hidden=true;
+ searchWorkspace.hidden=false;
+ searchControls.hidden=false;
+ leftTitle.textContent='Build your search.';
+ leftHelp.textContent='Add words and operators in any order. Remove anything by clicking it again. Pay attention to how adding keywords and operators changes the search results.';
+ rightTitle.textContent='Watch the pool react.';
+ resetFilters();
+ render();
+}
+
+function addTerm(w){
+ const i=tokens.findIndex(t=>t.type==='term'&&t.value===w);
+ if(i>=0)tokens.splice(i,1);else tokens.push({type:'term',value:w});
+ render();
+}
+
+function addOperator(v){tokens.push({type:'op',value:v});render()}
+
+function togglePhrase(value){
+
+ const i=tokens.findIndex(t=>t.type==='phrase'&&t.value===value);
+
+ if(i>=0)tokens.splice(i,1);else tokens.push({type:'phrase',value:value});
+
+ render();
+
+}
+
+function removeToken(i){tokens.splice(i,1);render()}
+
+function resetAll(){tokens=[{type:'term',value:'forests'}];render()}
+
+
+
+function tokenMatch(x,t){return !!x[t.value]}
+
+
+
+/* Read only the complete Boolean expression at the start of the token stream.
+
+   A dangling operator or an unconnected later keyword is visible in the builder
+
+   but does not execute yet. */
+
+function completeExpression(){
+
+ /* Find the first searchable component, then consume only explicit
+
+    operator + searchable-component pairs. Nothing is inferred. */
+
+ let start=tokens.findIndex(t=>t.type!=='op');
+
+ if(start<0)return {operands:[],operators:[],usedThrough:-1};
+
+ const operands=[tokens[start]], operators=[];
+
+ let i=start+1, usedThrough=start;
+
+ while(i+1<tokens.length){
+
+   if(tokens[i].type==='op' && tokens[i+1].type!=='op'){
+
+     operators.push(tokens[i].value);
+
+     operands.push(tokens[i+1]);
+
+     usedThrough=i+1;
+
+     i+=2;
+
+   } else break;
+
+ }
+
+ return {operands,operators,usedThrough};
+
+}
+
+
+
+/* Standard Boolean set logic: AND before OR. */
+
+function matches(x){
+
+ const e=completeExpression();
+
+ if(!e.operands.length)return false;
+
+
+
+ /* If the student has added searchable components but has not connected
+
+    them with Boolean operators, show the union of those independent sets.
+
+    This is the sandbox's "records currently in play" view — NOT implicit AND
+
+    and NOT implicit OR in the displayed query. */
+
+ const searchable=tokens.filter(t=>t.type!=='op');
+
+ const hasAnyOperator=tokens.some(t=>t.type==='op');
+
+ if(!hasAnyOperator){
+
+   return searchable.some(t=>tokenMatch(x,t));
+
+ }
+
+
+
+ /* Once an explicit Boolean expression exists, evaluate only the complete
+
+    expression. Dangling operators do not change the results. */
+
+ let segment=tokenMatch(x,e.operands[0]);
+
+ let answer=false;
+
+ for(let i=0;i<e.operators.length;i++){
+
+   const rhs=tokenMatch(x,e.operands[i+1]);
+
+   if(e.operators[i]==='AND'){
+
+     segment=segment && rhs;
+
+   }else{
+
+     answer=answer || segment;
+
+     segment=rhs;
+
+   }
+
+ }
+
+ return answer || segment;
+
+}
+
+let previousEffectiveSearch=null;
+
+function effectiveSearchSignature(){
+
+ const searchable=tokens.filter(t=>t.type!=='op');
+
+ const hasAnyOperator=tokens.some(t=>t.type==='op');
+
+
+
+ /* With no operators, the sandbox's current "records in play" state is
+
+    determined by all searchable components. */
+
+ if(!hasAnyOperator){
+
+   if(searchable.length===1)return 'EFFECTIVE:'+searchable[0].type+':'+searchable[0].value;
+
+   return 'PLAY:'+searchable.map(t=>t.type+':'+t.value).join('|');
+
+ }
+
+
+
+ /* With operators present, only the completed Boolean prefix is effective.
+
+    A dangling operator is deliberately excluded from this signature. */
+
+ const e=completeExpression();
+
+ const parts=[];
+
+ if(e.operands.length){
+
+   parts.push(e.operands[0].type+':'+e.operands[0].value);
+
+   for(let i=0;i<e.operators.length;i++){
+
+     parts.push('op:'+e.operators[i]);
+
+     parts.push(e.operands[i+1].type+':'+e.operands[i+1].value);
+
+   }
+
+ }
+
+ if(parts.length===1)return 'EFFECTIVE:'+parts[0];
+
+ return 'BOOL:'+parts.join('|');
+
+}
+
+
+function render(){
+
+ const active=new Set(tokens.filter(t=>t.type==='term').map(t=>t.value));
+
+ forestBank.innerHTML='';forestWords.forEach(w=>makeWord(forestBank,w,active));
+
+ insectBank.innerHTML='';insectWords.forEach(w=>makeWord(insectBank,w,active));
+
+ document.querySelectorAll('#phraseBank [data-phrase]').forEach(b=>{
+
+   const active=tokens.some(t=>t.type==='phrase'&&t.value===b.dataset.phrase);
+
+   const labels={
+
+     phrase:'invasive insects',
+
+     evergreen_forests:'evergreen forests',
+
+     tropical_rainforests:'tropical rainforests',
+
+     tiger_beetle:'tiger beetle'
+
+   };
+
+   b.classList.toggle('on',active);
+
+   b.textContent=(active?'− ':'+ ')+'Exact phrase: "'+labels[b.dataset.phrase]+'"';
+
+   b.onclick=()=>togglePhrase(b.dataset.phrase);
+
+ });
+
+
+
+ query.innerHTML='';
+
+ if(!tokens.length)query.innerHTML='<span style="color:#6b6071">Add a keyword or operator.</span>';
+
+ tokens.forEach((t,i)=>{
+
+   const s=document.createElement('span');s.className='qchip';
+
+   const phraseLabels={phrase:'invasive insects',evergreen_forests:'evergreen forests',tropical_rainforests:'tropical rainforests',tiger_beetle:'tiger beetle'};
+
+   const shown=t.type==='phrase'?'"'+phraseLabels[t.value]+'"':t.value;
+
+   s.innerHTML=shown+`<button aria-label="Remove ${shown}" onclick="removeToken(${i})">×</button>`;
+
+   if(t.type==='op')s.classList.add('op');
+
+   query.appendChild(s);
+
+ });
+
+
+
+ const searchVis=pool.filter(matches);
+ const vis=stage===2?searchVis.filter(recordPassesFilters):searchVis;
+ resultLegend.hidden=stage!==2;
+
+ const effectiveNow=effectiveSearchSignature();
+
+ const shouldReact=previousEffectiveSearch!==null && effectiveNow!==previousEffectiveSearch;
+
+ previousEffectiveSearch=effectiveNow;
+
+ results.innerHTML='';
+
+ vis.forEach((x,i)=>{
+
+   const d=document.createElement('div');d.className='item';const ic=document.createElement('span');ic.textContent=x.icon;d.appendChild(ic);
+  if(stage===2){if(x.peerReviewed){const p=document.createElement('span');p.className='metaBadge peerBadge';p.textContent='✓ PR';d.appendChild(p)}const a=document.createElement('span');a.className='metaBadge dateBadge';a.textContent=x.year>=2022?'NEW':x.year>=2017?'REC':'OLD';d.appendChild(a)}
+  if(shouldReact)d.style.animationDelay=Math.min(i,20)*6+'ms';else d.style.animation='none';results.appendChild(d)
+
+ });
+
+ if(stage===2){carriedQuery.textContent=queryText();originalResultCount.innerHTML='<strong>These keywords found '+searchVis.length+' results before filters.</strong>';count.textContent=vis.length+' of '+searchVis.length+' search results showing';peerBtn.classList.toggle('active',peerOnly);document.querySelectorAll('[data-date]').forEach(b=>b.classList.toggle('active',b.dataset.date===dateFilter));document.querySelectorAll('[data-source]').forEach(b=>b.classList.toggle('active',b.dataset.source===sourceFilter));const af=[];if(peerOnly)af.push('<strong>Peer reviewed only</strong>');if(dateFilter==='10')af.push('<strong>Last 10 years</strong>');if(dateFilter==='5')af.push('<strong>Last 5 years</strong>');if(sourceFilter==='journal')af.push('<strong>Academic journals</strong>');if(sourceFilter==='news')af.push('<strong>News</strong>');filterSummary.innerHTML=af.length?af.join(' + '):'No filters applied yet.'}else count.textContent=vis.length+' possible results';
+
+
+
+ const e=completeExpression();
+
+ const incomplete=e.usedThrough>=0 && e.usedThrough<tokens.length-1;
+
+ if(stage===2){const af=[];if(peerOnly)af.push('<strong>Peer reviewed only</strong>');if(dateFilter==='10')af.push('<strong>Last 10 years</strong>');if(dateFilter==='5')af.push('<strong>Last 5 years</strong>');if(sourceFilter==='journal')af.push('<strong>Academic journals</strong>');if(sourceFilter==='news')af.push('<strong>News</strong>');note.innerHTML=!af.length?'<strong>Your keywords have not changed.</strong> They found '+searchVis.length+' results. No filters are applied, so all '+searchVis.length+' are showing.':'<strong>Your keywords have not changed.</strong> They found '+searchVis.length+' results. With '+af.join(' + ')+', <strong>'+vis.length+' of those '+searchVis.length+' results are showing.</strong>';}
+ else if(incomplete) note.innerHTML='That new piece is visible, but the Boolean expression is still incomplete there. <strong>A dangling operator does not change the results.</strong>';
+
+ else if(e.operators.length) note.innerHTML='<strong>The result pool is calculated from the same fixed set of records using Boolean set logic.</strong>';
+
+ else if(tokens.filter(t=>t.type!=='op').length>1) note.innerHTML='These keyword sets are all <strong>in play</strong>, but you have not connected them yet. Try AND or OR and watch what changes.';
+
+ else note.innerHTML='Add another search term, or connect ideas with AND or OR.';
+
+}
+
+function makeWord(el,w,active){
+
+ const b=document.createElement('button');b.className='add';b.textContent=(active.has(w)?'− ':'+ ')+w;b.onclick=()=>addTerm(w);el.appendChild(b);
+
+}
+
+andBtn.onclick=()=>addOperator('AND');
+
+orBtn.onclick=()=>addOperator('OR');
+
+clearConnector.style.display='none';
+
+render();
+
+</script>
+
+</body></html>
