@@ -1,3 +1,4 @@
+
 <!doctype html>
 
 <html lang="en">
@@ -24,6 +25,7 @@ main{width:min(1200px,96vw);margin:22px auto;display:grid;grid-template-columns:
 
 h1{font-size:1.85rem;color:var(--deep);margin:0 0 9px}.help{color:var(--muted);line-height:1.45;margin:0 0 20px}
 
+.researchQuestion{border-left:4px solid var(--purple);background:#f2edf6;border-radius:10px;padding:12px 14px;margin:0 0 16px;line-height:1.45}.researchQuestion .label{margin-bottom:5px}.researchQuestion p{margin:0;font-weight:800;color:var(--deep)}
 .workspace{border:2px dashed #c9bad2;border-radius:17px;padding:16px;min-height:108px;background:#fbf9fc;margin-bottom:18px}
 
 .label{font-size:.78rem;font-weight:900;text-transform:uppercase;color:var(--muted);margin-bottom:9px}
@@ -78,6 +80,11 @@ h1{font-size:1.85rem;color:var(--deep);margin:0 0 9px}.help{color:var(--muted);l
 <p class="eyebrow">Your side</p><h1 id="leftTitle">Build the search.</h1>
 
 <p class="help" id="leftHelp">Add or remove pieces whenever you want. There is no required order.</p>
+
+<div class="researchQuestion" id="researchQuestion">
+<div class="label">Research question</div>
+<p>How do insects affect forests?</p>
+</div>
 
 <div class="workspace" id="searchWorkspace">
 <div class="label">Your search</div><div class="query" id="query"></div>
@@ -234,7 +241,7 @@ function previousFilterLesson(){if(filterLessonIndex>0)filterLessonIndex--;reset
 function goToFilters(){
  tokens=[{type:'term',value:'forests'},{type:'op',value:'AND'},{type:'term',value:'insects'}];
  stage=2;
- searchWorkspace.hidden=true;searchControls.hidden=true;filterControls.hidden=false;
+ researchQuestion.hidden=true;searchWorkspace.hidden=true;searchControls.hidden=true;filterControls.hidden=false;
  leftTitle.textContent='Which results do you need?';
  leftHelp.textContent='The search is fixed for this demo. Now watch what changes when you apply filters.';
  rightTitle.textContent='Watch the filtered pool.';
@@ -256,6 +263,7 @@ function backToFilters(){
 function backToSearch(){
  stage=1;
  filterControls.hidden=true;
+ researchQuestion.hidden=false;
  searchWorkspace.hidden=false;
  searchControls.hidden=false;
  leftTitle.textContent='Build your search.';
